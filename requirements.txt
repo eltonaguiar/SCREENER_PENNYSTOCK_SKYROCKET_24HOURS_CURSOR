@@ -6,3 +6,7 @@ pandas
 yfinance
 aiohttp
 termcolor
+ta
+matplotlib
+twelvedata
+Jinja2

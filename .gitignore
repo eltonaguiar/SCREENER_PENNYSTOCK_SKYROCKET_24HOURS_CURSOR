@@ -8,3 +8,6 @@ geckodriver.log
 .wdm/
 screener-env/
 .DS_Store
+# Cache files
+cache/
+growth_stock_screener/cache/

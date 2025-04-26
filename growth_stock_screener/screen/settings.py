@@ -1,6 +1,22 @@
 import multiprocessing
 
+# TIMEFRAME SELECTION (for short-term skyrocket screening)
+# Options: "24_hours", "3_days", "7_days", "2_weeks", "1_month"
+TIMEFRAME = "24_hours"
+
 # ITERATIONS (modify these values as desired)
+
+# Price Range Settings (Used by short_term_momentum)
+min_price_short_term: float = 0.10 # Default min for short-term
+max_price_short_term: float = 4.00 # Default max for short-term
+
+price_range_presets = {
+    "skyrocket_under_4": {"min": 0.10, "max": 4.00}, # Current default
+    "penny_stocks": {"min": 0.10, "max": 5.00},
+    "sub_10_dollar": {"min": 0.50, "max": 10.00},
+    # Add more presets as needed
+}
+active_price_preset = "skyrocket_under_4" # Default preset key
 
 # Iteration 1: Relative Strength
 min_rs: int = 90  # minimum RS rating to pass (integer from 0-100)
@@ -31,3 +47,13 @@ protected_rs: int = 97          # minimum RS rating to bypass revenue screen ite
 
 # Thread Pool Size
 threads: int = min(int(multiprocessing.cpu_count() * 0.75), 10)  # number of concurrent browser instances to fetch dynamic data (positive integer)
+
+# CACHING
+MAX_CACHE_AGE_DAYS: float = 1.0 # Maximum age of cached stock data in days. Set to 0 to disable caching.
+
+# THIRD-PARTY APIs (Store securely - e.g., environment variables or .env file)
+# --- Replace placeholder with your actual key ONLY for local testing --- 
+TWELVEDATA_API_KEY: str = "6d39651259df48f6a4bb6f3c3755792f" # <<< YOUR KEY HERE (DO NOT COMMIT)
+
+# PERFORMANCE
+QUICK_MODE_FRACTION: float = 1.0 # Fraction of tickers to process (e.g., 0.25 for 25%). Set > 1.0 to disable.

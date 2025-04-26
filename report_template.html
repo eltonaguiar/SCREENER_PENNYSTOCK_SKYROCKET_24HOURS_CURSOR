@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stock Analysis Report</title>
+        {# Basic Styling - Consider moving to a separate CSS file for larger projects #}
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                color: #333;
+                background-color: #f4f7f6;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background-color: #fff;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+            .header {
+                background: linear-gradient(135deg, #3498db, #2980b9);
+                color: white;
+                padding: 25px 20px;
+                text-align: center;
+                margin-bottom: 30px;
+                border-radius: 5px;
+            }
+            .header h1 {
+                 color: white;
+                 margin-bottom: 5px;
+            }
+            .summary {
+                background-color: #eaf2f8;
+                padding: 20px;
+                border-radius: 5px;
+                margin-bottom: 30px;
+                border-left: 5px solid #3498db;
+            }
+            .stock-card {
+                background-color: #fff;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 25px;
+                margin-bottom: 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                transition: box-shadow 0.3s ease;
+            }
+            .stock-card:hover {
+                box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+            }
+            .stock-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .stock-name {
+                font-size: 26px;
+                font-weight: bold;
+                color: #34495e;
+            }
+            .stock-price {
+                font-size: 26px;
+                font-weight: bold;
+                color: #27ae60;
+                margin-left: 15px; /* Spacing if wraps */
+            }
+            .metrics {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 25px;
+                margin-bottom: 20px;
+            }
+            .metric-group {
+                background-color: #f9f9f9;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #eee;
+            }
+            .metric-group h3 {
+                margin-top: 0;
+                margin-bottom: 15px;
+                font-size: 18px;
+                color: #3498db;
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 5px;
+                display: inline-block;
+            }
+            .metric {
+                margin-bottom: 12px;
+                display: flex;
+                justify-content: space-between;
+            }
+            .metric-label {
+                /* font-weight: bold; */
+                color: #555;
+                padding-right: 10px;
+            }
+            .metric-value {
+                font-weight: bold;
+                text-align: right;
+            }
+            .positive { color: #27ae60; }
+            .negative { color: #e74c3c; }
+            .neutral { color: #3498db; }
+            .chart-container {
+                margin-top: 25px;
+                text-align: center;
+                background-color: #f9f9f9;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #eee;
+            }
+             .chart-container img {
+                max-width: 100%;
+                height: auto;
+                margin-top: 10px;
+            }
+            .investment-thesis {
+                 margin-top: 25px;
+                 background-color: #fdfdfd;
+                 padding: 20px;
+                 border-radius: 5px;
+                 border: 1px solid #eee;
+            }
+            .investment-thesis h3 {
+                 margin-top: 0;
+                 color: #2c3e50;
+            }
+             .investment-thesis ul {
+                 padding-left: 20px;
+                 list-style: disc;
+             }
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 25px;
+                border-top: 1px solid #ddd;
+                color: #7f8c8d;
+                font-size: 14px;
+            }
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .stock-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .stock-price {
+                    margin-left: 0;
+                    margin-top: 5px;
+                }
+                .metrics {
+                     grid-template-columns: 1fr; /* Stack metrics on smaller screens */
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Stock Analysis Report</h1>
+                <p>{{ report_title }}</p> {# Title will be dynamic #}
+                <p>Generated on {{ generation_date }}</p> {# Date will be dynamic #}
+            </div>
+
+            <div class="summary">
+                <h2>Analysis Summary</h2>
+                <p>This report analyzes {{ stocks | length }} stock(s) based on the {{ timeframe.replace('_', ' ') }} timeframe criteria.</p>
+                <p>Price Range Filter: ${{ min_price }} - ${{ max_price }}</p>
+
+                {# Scoring Logic Section #}
+                {% if timeframe_weights %}
+                    <h3>Scoring Logic ({{ timeframe.replace('_', ' ') }} Timeframe)</h3>
+                    <p>{{ timeframe_weights.description }} The score is out of 100.</p>
+                    <ul>
+                        {% for criterion, weight in timeframe_weights.get('weights', {}).items() %}
+                            <li><strong>{{ criterion }}:</strong> {{ weight }} points</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {# Limitations Section #}
+                <h3>Limitations & Considerations</h3>
+                <ul>
+                    <li><strong>Point-in-Time Data:</strong> Analysis is based on data available at the time of generation ({{ generation_date }}). Market conditions change rapidly.</li>
+                    <li><strong>Technical Focus:</strong> The scoring heavily relies on technical indicators and recent price action. It does not incorporate deep fundamental analysis (e.g., financials, management, competitive landscape).</li>
+                    <li><strong>Indicator Lag:</strong> Technical indicators inherently lag price movements.</li>
+                    <li><strong>Data Accuracy:</strong> Relies on data accuracy from external providers (Yahoo Finance, Twelve Data). Errors or gaps in data can affect results.</li>
+                    <li><strong>No Guarantees:</strong> High scores indicate alignment with the defined technical criteria, not a guarantee of future price appreciation.</li>
+                </ul>
+
+                {# Enhancements Section #}
+                <h3>Potential Enhancements</h3>
+                <ul>
+                    <li>Integration of basic fundamental filters (e.g., positive revenue growth, manageable debt).</li>
+                    <li>Inclusion of market sentiment indicators (e.g., news analysis, social media trends).</li>
+                    <li>Backtesting results for the specific timeframe strategy.</li>
+                    <li>User-configurable indicator parameters and scoring weights.</li>
+                    <li>More sophisticated volatility and risk metrics.</li>
+                </ul>
+
+                 <p><em>Note: This is an automated analysis. Always conduct your own comprehensive research before making investment decisions.</em></p>
+            </div>
+
+            {# Top Picks Summary Section #}
+            {% if top_picks %}
+            <div class="summary top-picks">
+                 <h2>Top 3 Picks (Based on Score)</h2>
+                 {% for stock in top_picks %}
+                 <div class="top-pick-card">
+                     <h4>{{ loop.index }}. {{ stock.ticker }}: {{ stock.info.get('longName', 'N/A') }} (Score: {{ stock.score_1_10 }}/10)</h4>
+                     <p><strong>Key Drivers:</strong> {{ stock.criteria }}</p>
+                     <p>This stock scored highly primarily due to {{ stock.criteria.split(', ')[0] if stock.criteria else 'meeting multiple criteria'}}. Please review the full details below.</p>
+                 </div>
+                 {% endfor %}
+            </div>
+            {% endif %}
+
+            <h2>Stock Analysis</h2>
+
+            {# Loop through each stock in the results #}
+            {% for stock in stocks %}
+            <div class="stock-card">
+                <div class="stock-header">
+                    {# Use stock_info.longName if available, otherwise just ticker #}
+                    <div class="stock-name">{{ stock.ticker }}: {{ stock.info.get('longName', 'N/A') }}</div>
+                    {# Format price nicely - Price is already formatted string from python #}
+                    <div class="stock-price">${{ stock.price }}</div>
+                </div>
+
+                <div class="metrics">
+                    <div class="metric-group">
+                        <h3>Company Information</h3>
+                        <div class="metric">
+                            <span class="metric-label">Industry:</span>
+                            <span class="metric-value">{{ stock.info.get('industry', 'N/A') }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Sector:</span>
+                            <span class="metric-value">{{ stock.info.get('sector', 'N/A') }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Market Cap:</span>
+                            {# Format market cap #}
+                            <span class="metric-value">{{ format_market_cap(stock.info.get('marketCap')) }}</span>
+                        </div>
+                         <div class="metric">
+                            <span class="metric-label">Inst. Ownership:</span>
+                            <span class="metric-value">{{ "{:.1f}%".format(stock.inst_own_pct) if stock.inst_own_pct is not none else 'N/A' }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Float Short %:</span>
+                            <span class="metric-value">{{ "{:.1f}%".format(stock.short_int_pct) if stock.short_int_pct is not none else 'N/A' }}</span>
+                        </div>
+                         <div class="metric">
+                            <span class="metric-label">Short Ratio:</span>
+                            <span class="metric-value">{{ "{:.1f}".format(stock.short_ratio) if stock.short_ratio is not none else 'N/A' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-group">
+                        <h3>Performance</h3>
+                        {# Add calculated performance metrics here - requires fetching more data #}
+                        <div class="metric"><span class="metric-label">1 Week:</span><span class="metric-value {{ 'positive' if stock.perf_1w > 0 else 'negative' if stock.perf_1w < 0 else 'neutral' }}">{{ "{:+.2f}%".format(stock.perf_1w) if stock.perf_1w is not none else 'N/A'}}</span></div>
+                        <div class="metric"><span class="metric-label">1 Month:</span><span class="metric-value {{ 'positive' if stock.perf_1m > 0 else 'negative' if stock.perf_1m < 0 else 'neutral' }}">{{ "{:+.2f}%".format(stock.perf_1m) if stock.perf_1m is not none else 'N/A'}}</span></div>
+                        <div class="metric"><span class="metric-label">3 Months:</span><span class="metric-value {{ 'positive' if stock.perf_3m > 0 else 'negative' if stock.perf_3m < 0 else 'neutral' }}">{{ "{:+.2f}%".format(stock.perf_3m) if stock.perf_3m is not none else 'N/A'}}</span></div>
+                        <div class="metric"><span class="metric-label">6 Months:</span><span class="metric-value {{ 'positive' if stock.perf_6m > 0 else 'negative' if stock.perf_6m < 0 else 'neutral' }}">{{ "{:+.2f}%".format(stock.perf_6m) if stock.perf_6m is not none else 'N/A'}}</span></div>
+                        <div class="metric"><span class="metric-label">1 Year:</span><span class="metric-value {{ 'positive' if stock.perf_1y > 0 else 'negative' if stock.perf_1y < 0 else 'neutral' }}">{{ "{:+.2f}%".format(stock.perf_1y) if stock.perf_1y is not none else 'N/A'}}</span></div>
+                        <div class="metric"><span class="metric-label">Momentum (6m):</span><span class="metric-value {{ 'positive' if stock.momentum_6m is not none and stock.momentum_6m > 0 else 'negative' if stock.momentum_6m is not none and stock.momentum_6m < 0 else 'neutral' }}">{{ "{:+.1f}%".format(stock.momentum_6m) if stock.momentum_6m is not none else 'N/A'}}</span></div>
+                        <div class="metric"><span class="metric-label">Sharpe (1y):</span><span class="metric-value">{{ "{:.2f}".format(stock.sharpe_ratio) if stock.sharpe_ratio is not none else 'N/A'}}</span></div>
+                    </div>
+
+                    <div class="metric-group">
+                        <h3>Technical Indicators</h3>
+                         <div class="metric">
+                            <span class="metric-label">ATR (14d %):</span>
+                            <span class="metric-value">{{ "{:.1f}%".format(stock.atr_percent) if stock.atr_percent is not none else 'N/A' }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">RSI (14d):</span>
+                            <span class="metric-value {{ 'negative' if stock.rsi < 30 else 'positive' if stock.rsi > 70 else 'neutral' }}">{{ "{:.1f}".format(stock.rsi) if stock.rsi is not none else 'N/A' }}</span>
+                        </div>
+                         <div class="metric">
+                            <span class="metric-label">BB Squeeze:</span>
+                            <span class="metric-value {{ 'positive' if stock.bb_squeeze else 'neutral' }}">{{ 'Yes' if stock.bb_squeeze else 'No' }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">50-day SMA:</span>
+                             {# Call global function, ensure output is treated as HTML #}
+                             <span class="metric-value">{{ format_sma(stock.price, stock.sma50)|safe }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">200-day SMA:</span>
+                             {# Call global function, ensure output is treated as HTML #}
+                            <span class="metric-value">{{ format_sma(stock.price, stock.sma200)|safe }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">% From 52W High:</span>
+                            <span class="metric-value negative">{{ "{:+.1f}%".format(stock.pct_from_52w_high) if stock.pct_from_52w_high is not none else 'N/A' }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">% From 52W Low:</span>
+                            <span class="metric-value positive">{{ "{:+.1f}%".format(stock.pct_from_52w_low) if stock.pct_from_52w_low is not none else 'N/A' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-group">
+                        <h3>Valuation</h3>
+                        {# Add more fields from stock_info if available #}
+                        <div class="metric"><span class="metric-label">Trailing P/E:</span><span class="metric-value">{{ "{:.2f}".format(stock.info.get('trailingPE')) if stock.info.get('trailingPE') else 'N/A' }}</span></div>
+                        <div class="metric"><span class="metric-label">Forward P/E:</span><span class="metric-value">{{ "{:.2f}".format(stock.info.get('forwardPE')) if stock.info.get('forwardPE') else 'N/A' }}</span></div>
+                        <div class="metric"><span class="metric-label">Price/Sales (TTM):</span><span class="metric-value">{{ "{:.2f}".format(stock.info.get('priceToSalesTrailing12Months')) if stock.info.get('priceToSalesTrailing12Months') else 'N/A' }}</span></div>
+                        <div class="metric"><span class="metric-label">Price/Book:</span><span class="metric-value">{{ "{:.2f}".format(stock.info.get('priceToBook')) if stock.info.get('priceToBook') else 'N/A' }}</span></div>
+                         <div class="metric"><span class="metric-label">Profit Margin:</span><span class="metric-value {{ 'positive' if stock.info.get('profitMargins', 0) > 0 else 'negative' if stock.info.get('profitMargins', 0) < 0 else 'neutral' }}">{{ "{:.2f}%".format(stock.info.get('profitMargins', 0) * 100) }}</span></div>
+                         <div class="metric"><span class="metric-label">Revenue Growth (TTM):</span><span class="metric-value {{ 'positive' if stock.info.get('revenueGrowth', 0) > 0 else 'negative' if stock.info.get('revenueGrowth', 0) < 0 else 'neutral' }}">{{ "{:.2f}%".format(stock.info.get('revenueGrowth', 0) * 100) }}</span></div>
+                         <div class="metric"><span class="metric-label">Earnings Growth (TTM):</span><span class="metric-value {{ 'positive' if stock.info.get('earningsGrowth', 0) > 0 else 'negative' if stock.info.get('earningsGrowth', 0) < 0 else 'neutral' }}">{{ "{:.2f}%".format(stock.info.get('earningsGrowth', 0) * 100) }}</span></div>
+                    </div>
+
+                    {# Removed Analyst Opinions section as data isn't readily available from yfinance #}
+
+                </div> {# End metrics grid #}
+
+                <div class="chart-container">
+                    <h3>Price Chart (1 Year)</h3>
+                    {# Optionally embed a static chart image if generated #}
+                    <p>Visit <a href="https://finance.yahoo.com/quote/{{ stock.ticker }}" target="_blank">Yahoo Finance</a> for interactive charts.</p>
+                </div>
+
+                {# Optional Investment Thesis section - could summarize key passing criteria #}
+                <div class="investment-thesis">
+                    <h3>Screening Highlights</h3>
+                    <p>{{ stock.ticker }} passed the following key criteria:</p>
+                    <ul>
+                        {% for criterion in stock.criteria.split(', ') %}
+                        <li>{{ criterion }}</li>
+                        {% endfor %}
+                    </ul>
+                    {# Add a concluding sentence based on score or overall profile? #}
+                     <p>Overall Score: <span class="metric-value">{{ stock.score }}</span></p>
+                </div>
+            </div> {# End stock-card #}
+            {% else %}
+            <p>No stocks passed the screening criteria.</p>
+            {% endfor %}
+
+            <div class="footer">
+                <p>Generated by Skyrocket Stock Screener v2</p> {# Updated name #}
+                <p>This report is for informational purposes only and does not constitute investment advice.</p>
+            </div>
+        </div> {# End container #}
+    </body>
+    </html> 
